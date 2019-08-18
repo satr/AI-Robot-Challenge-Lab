@@ -20,9 +20,21 @@ scriptstart=$(date +%s)
 # ROS image for Sawyer development
 #
 
-# author="Paul Stubbs (pstubbs@microsoft.com)"
-# description="Microsoft Robot Challenge 2018"
+# Time it
+start=$(date +%s)
+#
+#
+
+#dev only
+if false; then
+
+# author="Sergey Smolnikov (satr.github.io@gmail.com)"
+# description="Adoption to ROS Melodic and Ubuntu 18. Forked from autored Paul Stubbs (pstubbs@microsoft.com) Microsoft Robot Challenge 2018"
 # version="1.0"
+
+# Install some common CLI tools
+sudo apt-get update -y
+sudo apt-get install -y wget software-properties-common
 
 #
 #
@@ -31,10 +43,6 @@ scriptstart=$(date +%s)
 echo -e ${GREEN}
 echo -e "***\n***\n***\n***\nInstall bot framework + Emulator\n***\n***\n***\n***"
 echo -e ${NC}
-# Time it
-start=$(date +%s)
-#
-#
 
 sudo apt-get update
 # install unmet dependencies
@@ -44,10 +52,18 @@ sudo apt-get -f install libappindicator1 -y
 # install any unmet dependencies
 sudo apt-get -f install -y
 
-TEMP_DEB="$(mktemp)"
-wget -O "$TEMP_DEB" 'https://roboticslabstorage.blob.core.windows.net/github-assets/botframework-emulator_4.0.15-alpha_amd64.deb'
-sudo dpkg -i "$TEMP_DEB"
-rm -f "$TEMP_DEB"
+fi
+#dev only
+if false; then
+
+
+#Get emulator app
+rm ../resources/BotFramework-Emulator*.AppImage
+wget 'https://github.com/microsoft/BotFramework-Emulator/releases/download/v4.5.2/BotFramework-Emulator-4.5.2-linux-x86_64.AppImage' \
+  -O ../resources/BotFramework-Emulator.AppImage
+sudo chmod +x ../resources/BotFramework-Emulator.AppImage
+
+
 # install any unmet dependencies
 sudo apt-get -f install -y
 sudo apt autoremove -y
@@ -60,8 +76,19 @@ sudo add-apt-repository -y ppa:deadsnakes/ppa
 sudo apt-get update -y
 sudo apt-get install -y python3.6
 sudo apt-get install -y python3-pip
+sudo ln -sf /usr/bin/python3.6 /usr/bin/python
+
+#Add env to bash
+echo "export PYTHONPATH=/usr/local/lib/python3.6" >> ~/.bashrc
+source ~/.bashrc
+
 # install any unmet dependencies
 sudo apt-get -f install -y
+# Install pip
+echo -e ${GREEN}
+echo -e "***\n***\n***\n***\nInstall pip\n***\n***\n***\n***"
+echo -e ${NC}
+sudo python3 -m pip uninstall pip -y && sudo apt install python3-pip --reinstall -y
 python3.6 -m pip install --upgrade pip
 
 # Install Bot Framework Deps
@@ -76,7 +103,7 @@ python3.6 -m pip install --user botbuilder.core
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -99,37 +126,41 @@ echo -e ${GREEN}
 echo -e "***\n***\n***\n***\nUpdate to lateset software lists\n***\n***\n***\n***"
 echo -e ${NC}
 
-# Install some common CLI tools
-sudo apt-get update -y
-sudo apt-get install -y wget software-properties-common 
-
 # Configure Ubuntu repositories. Setup sources.list
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu xenial main" > /etc/apt/sources.list.d/ros-latest.list'
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 
 # Setup keys
-sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
-# Install ROS Kinetic Desktop FUll
+# Install ROS Melodic Desktop FUll
 echo -e ${GREEN}
-echo -e "***\n***\n***\n***\n Install ROS Kinetic Desktop FUll \n***\n***\n***\n***"
+echo -e "***\n***\n***\n***\n Install ROS Melodic Desktop FUll \n***\n***\n***\n***"
 echo -e ${NC}
 
 sudo apt-get update -y
-sudo apt-get install -y ros-kinetic-desktop-full
+sudo apt install ros-melodic-desktop-full -y
 
 # Initialize rosdep
 sudo rosdep init || echo -e "${YELLOW}ROSDep Already Exists.${NC}"
 rosdep update
 
+#Add env to bash
+echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
 # Install rosinstall
-sudo apt-get install -y python-rosinstall -y
+sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential -y
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
+
+#dev only
+fi
+if true; then
 
 
 #
@@ -151,12 +182,13 @@ echo "source ~/ros_ws/devel/setup.bash" >> ~/.bashrc
 # Create ROS Workspace
 mkdir -p ~/ros_ws/src
 cd ~/ros_ws
-source /opt/ros/kinetic/setup.bash
-catkin_make
+source /opt/ros/melodic/setup.bash
+catkin_make --cmake-args -DPYTHON_VERSION=3.6
+
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -179,27 +211,27 @@ start=$(date +%s)
 # Update to lateset software lists
 
 sudo apt-get update
-sudo apt-get install -y \
+sudo apt-get install -y --allow-unauthenticated \
   git-core \
   python-argparse \
   python-wstool \
   python-vcstools \
   python-rosdep \
-  ros-kinetic-control-msgs \
-  ros-kinetic-joystick-drivers \
-  ros-kinetic-xacro \
-  ros-kinetic-tf2-ros \
-  ros-kinetic-rviz \
-  ros-kinetic-cv-bridge \
-  ros-kinetic-actionlib \
-  ros-kinetic-actionlib-msgs \
-  ros-kinetic-dynamic-reconfigure \
-  ros-kinetic-trajectory-msgs \
-  ros-kinetic-rospy-message-converter
+  ros-melodic-control-msgs \
+  ros-melodic-joystick-drivers \
+  ros-melodic-xacro \
+  ros-melodic-tf2-ros \
+  ros-melodic-rviz \
+  ros-melodic-cv-bridge \
+  ros-melodic-actionlib \
+  ros-melodic-actionlib-msgs \
+  ros-melodic-dynamic-reconfigure \
+  ros-melodic-trajectory-msgs \
+  ros-melodic-rospy-message-converter
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -225,12 +257,12 @@ wstool update
 
 # Source ROS Setup
 cd ~/ros_ws
-source /opt/ros/kinetic/setup.bash
+source /opt/ros/melodic/setup.bash
 catkin_make
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -257,7 +289,7 @@ cp ~/ros_ws/src/intera_sdk/intera.sh ~/ros_ws
 # Update the copy of the intera.sh file
 # cd ~/ros_ws
 # Update ROS Distribution
-sed -i 's/ros_version="indigo"/ros_version="kinetic"/' ~/ros_ws/intera.sh
+sed -i 's/ros_version="indigo"/ros_version="melodic"/' ~/ros_ws/intera.sh
 # Update the ROBOTS hostname
 sed -i 's/robot_hostname="robot_hostname.local"/robot_hostname="paule.local"/' ~/ros_ws/intera.sh
 
@@ -275,7 +307,7 @@ echo -e ${NC}
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -301,20 +333,20 @@ start=$(date +%s)
 #
 #
 sudo apt-get update -y
-sudo apt-get install -y \
+sudo apt-get install -y --allow-unauthenticated \
   gazebo7 \
-  ros-kinetic-qt-build \
-  ros-kinetic-gazebo-ros-control \
-  ros-kinetic-gazebo-ros-pkgs \
-  ros-kinetic-ros-control \
-  ros-kinetic-control-toolbox \
-  ros-kinetic-realtime-tools \
-  ros-kinetic-ros-controllers \
-  ros-kinetic-xacro \
+  ros-melodic-qt-build \
+  ros-melodic-gazebo-ros-control \
+  ros-melodic-gazebo-ros-pkgs \
+  ros-melodic-ros-control \
+  ros-melodic-control-toolbox \
+  ros-melodic-realtime-tools \
+  ros-melodic-ros-controllers \
+  ros-melodic-xacro \
   python-wstool \
-  ros-kinetic-tf-conversions \
-  ros-kinetic-kdl-parser \
-  ros-kinetic-sns-ik-lib
+  ros-melodic-tf-conversions \
+  ros-melodic-kdl-parser \
+  ros-melodic-sns-ik-lib
 
 # Install Sawyer Simulator files
 echo -e ${GREEN}
@@ -339,7 +371,7 @@ else
   cd ~/ros_ws/src
 fi
 
-source /opt/ros/kinetic/setup.bash 
+source /opt/ros/melodic/setup.bash 
 wstool merge sawyer_simulator/sawyer_simulator.rosinstall
 wstool update
 
@@ -347,13 +379,13 @@ wstool update
 echo -e ${GREEN}
 echo -e "***\n***\n***\n***\nSDK Build the Sources\n***\n***\n***\n***"
 echo -e ${NC}
-source /opt/ros/kinetic/setup.bash
+source /opt/ros/melodic/setup.bash
 cd ~/ros_ws
 catkin_make
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -391,7 +423,7 @@ sudo apt-get install google-chrome-stable
 
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -416,9 +448,12 @@ sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 sudo apt-get update
 sudo apt-get install code
 
+#dev only
+fi
+
 # Time it
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
@@ -442,7 +477,7 @@ sudo apt-get autoclean -y
 # Time it
 start=${scriptstart}
 end=$(date +%s)
-runtime=$(python -c "print '%u:%02u' % ((${end} - ${start})/60, (${end} - ${start})%60)")
+runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${start})%60))")
 echo -e ${BLUE}
 echo -e "Total Elapsed Time: ${runtime}"
 echo -e ${NC}
