@@ -4,7 +4,7 @@
 set -e
 
 # Hack: Clear any file locks
-sudo rm /var/lib/apt/lists/lock
+sudo rm -f /var/lib/apt/lists/lock
 
 # Color it
 NC='\033[0m' # No Color
@@ -26,7 +26,7 @@ start=$(date +%s)
 #
 
 #dev only
-if false; then
+if true; then
 
 # author="Sergey Smolnikov (satr.github.io@gmail.com)"
 # description="Adoption to ROS Melodic and Ubuntu 18. Forked from autored Paul Stubbs (pstubbs@microsoft.com) Microsoft Robot Challenge 2018"
@@ -54,11 +54,11 @@ sudo apt-get -f install -y
 
 fi
 #dev only
-if false; then
+if true; then
 
 
 #Get emulator app
-rm ../resources/BotFramework-Emulator*.AppImage
+rm -f ../resources/BotFramework-Emulator*.AppImage
 wget 'https://github.com/microsoft/BotFramework-Emulator/releases/download/v4.5.2/BotFramework-Emulator-4.5.2-linux-x86_64.AppImage' \
   -O ../resources/BotFramework-Emulator.AppImage
 sudo chmod +x ../resources/BotFramework-Emulator.AppImage
@@ -69,27 +69,32 @@ sudo apt-get -f install -y
 sudo apt autoremove -y
 
 # Install Python 3.6
-echo -e ${GREEN}
-echo -e "***\n***\n***\n***\nInstall Python 3.6\n***\n***\n***\n***"
-echo -e ${NC}
-sudo add-apt-repository -y ppa:deadsnakes/ppa
-sudo apt-get update -y
-sudo apt-get install -y python3.6
-sudo apt-get install -y python3-pip
-sudo ln -sf /usr/bin/python3.6 /usr/bin/python
+#echo -e ${GREEN}
+#echo -e "***\n***\n***\n***\nInstall Python 3.6\n***\n***\n***\n***"
+#echo -e ${NC}
+#sudo add-apt-repository -y ppa:deadsnakes/ppa
+#sudo apt-get update -y
+#sudo apt-get install -y python3.6
+#sudo apt-get install -y python3-pip
+#sudo ln -sf /usr/bin/python3.6 /usr/bin/python
 
 #Add env to bash
-echo "export PYTHONPATH=/usr/local/lib/python3.6" >> ~/.bashrc
-source ~/.bashrc
+#echo "export PYTHONPATH=/usr/local/lib/python3.6" >> ~/.bashrc
+#source ~/.bashrc
 
 # install any unmet dependencies
-sudo apt-get -f install -y
+#sudo apt-get -f install -y
 # Install pip
 echo -e ${GREEN}
 echo -e "***\n***\n***\n***\nInstall pip\n***\n***\n***\n***"
 echo -e ${NC}
-sudo python3 -m pip uninstall pip -y && sudo apt install python3-pip --reinstall -y
-python3.6 -m pip install --upgrade pip
+#sudo python3 -m pip uninstall pip -y && sudo apt install python3-pip --reinstall -y
+sudo apt install --upgrade python3-pip -y
+#alias pip=pip3
+
+fi
+#dev only
+if true; then
 
 # Install Bot Framework Deps
 echo -e ${GREEN}
@@ -107,6 +112,9 @@ runtime=$(python -c "print('{0}:{1}'.format((${end} - ${start})/60, (${end} - ${
 echo -e ${BLUE}
 echo -e "Elapsed Time: ${runtime}"
 echo -e ${NC}
+fi
+#dev only
+if true; then
 
 #
 #
@@ -148,6 +156,10 @@ rosdep update
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 
+#Install missed components
+python3 -m pip install catkin_pkg
+sudo apt install python3-empy -y
+
 # Install rosinstall
 sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential -y
 
@@ -180,10 +192,11 @@ echo "source ~/ros_ws/devel/setup.bash" >> ~/.bashrc
 
 
 # Create ROS Workspace
+rm -rf ~/ros_ws
 mkdir -p ~/ros_ws/src
 cd ~/ros_ws
 source /opt/ros/melodic/setup.bash
-catkin_make --cmake-args -DPYTHON_VERSION=3.6
+catkin_make --cmake-args # -DPYTHON_VERSION=3.6
 
 
 # Time it
@@ -334,8 +347,7 @@ start=$(date +%s)
 #
 sudo apt-get update -y
 sudo apt-get install -y --allow-unauthenticated \
-  gazebo7 \
-  ros-melodic-qt-build \
+  gazebo9 \
   ros-melodic-gazebo-ros-control \
   ros-melodic-gazebo-ros-pkgs \
   ros-melodic-ros-control \
@@ -345,8 +357,15 @@ sudo apt-get install -y --allow-unauthenticated \
   ros-melodic-xacro \
   python-wstool \
   ros-melodic-tf-conversions \
-  ros-melodic-kdl-parser \
-  ros-melodic-sns-ik-lib
+  ros-melodic-kdl-parser
+
+#TODO not found
+#  ros-melodic-qt-build \
+#  ros-melodic-sns-ik-lib
+#  git clone https://github.com/RethinkRobotics-opensource/sns_ik.git
+# cd sns_ik\snk_ik_lib && mkdir build && cd build && cmake -DUSEWX=yes -DCMAKE_BUILD_TYPE=Release .. && make -j4
+# sudo cp -r devel/share/sns_ik_lib /opt/ros/melodic/share
+# sudo cp ../package.xml /opt/ros/melodic/share/snk_ik_lib/
 
 # Install Sawyer Simulator files
 echo -e ${GREEN}
@@ -370,7 +389,6 @@ else
   git pull
   cd ~/ros_ws/src
 fi
-
 source /opt/ros/melodic/setup.bash 
 wstool merge sawyer_simulator/sawyer_simulator.rosinstall
 wstool update
@@ -382,6 +400,10 @@ echo -e ${NC}
 source /opt/ros/melodic/setup.bash
 cd ~/ros_ws
 catkin_make
+
+fi
+#dev only
+if true; then
 
 # Time it
 end=$(date +%s)
