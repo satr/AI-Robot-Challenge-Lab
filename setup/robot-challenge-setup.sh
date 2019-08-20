@@ -54,7 +54,7 @@ sudo apt-get -f install -y
 
 fi
 #dev only
-if true; then
+if false; then
 
 
 #Get emulator app
@@ -154,15 +154,18 @@ sudo apt install ros-melodic-desktop-full -y
 sudo rosdep init || echo -e "${YELLOW}ROSDep Already Exists.${NC}"
 rosdep update
 
-#Install missed components from RethinkingRobotics
+echo "Install missed components from RethinkingRobotics"
 #http://nu-msr.github.io/embedded-course-site/notes/baxter_introduction.html#sawyer-build-instructions
-cd .. #down from "setup"
+cd ../src #down from "setup"
 mkdir -p sawyerws/src
 cd sawyerws/src/
+pwd
 wstool init
 wstool merge https://gist.githubusercontent.com/jarvisschultz/f65d36e3f99d94a6c3d9900fa01ee72e/raw/sawyer_packages.rosinstall
 wstool update
-cd ../../setup #back to "setup"
+cd ../../../setup #back to "setup"
+pwd
+exit
 
 source /opt/ros/melodic/setup.bash
 catkin_make
