@@ -28,7 +28,7 @@ your_hostname="Ubuntu16"
 
 
 # Specify ROS distribution (e.g. indigo, hydro, etc.)
-ros_version="kinetic"
+ros_version="melodic"
 #-----------------------------------------------------------------------------#
 
 tf=$(mktemp)

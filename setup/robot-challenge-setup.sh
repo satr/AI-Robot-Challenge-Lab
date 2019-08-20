@@ -68,6 +68,7 @@ sudo chmod +x ../resources/BotFramework-Emulator.AppImage
 sudo apt-get -f install -y
 sudo apt autoremove -y
 
+# Ubuntu 18 already have Python 3.6
 # Install Python 3.6
 #echo -e ${GREEN}
 #echo -e "***\n***\n***\n***\nInstall Python 3.6\n***\n***\n***\n***"
@@ -88,6 +89,7 @@ sudo apt autoremove -y
 echo -e ${GREEN}
 echo -e "***\n***\n***\n***\nInstall pip\n***\n***\n***\n***"
 echo -e ${NC}
+#Fiollowing line is for troubleshooting only - when it is not happen to install pip
 #sudo python3 -m pip uninstall pip -y && sudo apt install python3-pip --reinstall -y
 sudo apt install --upgrade python3-pip -y
 #alias pip=pip3
@@ -152,6 +154,18 @@ sudo apt install ros-melodic-desktop-full -y
 sudo rosdep init || echo -e "${YELLOW}ROSDep Already Exists.${NC}"
 rosdep update
 
+#Install missed components from RethinkingRobotics
+#http://nu-msr.github.io/embedded-course-site/notes/baxter_introduction.html#sawyer-build-instructions
+cd .. #down from "setup"
+mkdir -p sawyerws/src
+cd sawyerws/src/
+wstool init
+wstool merge https://gist.githubusercontent.com/jarvisschultz/f65d36e3f99d94a6c3d9900fa01ee72e/raw/sawyer_packages.rosinstall
+wstool update
+cd ../../setup #back to "setup"
+
+source /opt/ros/melodic/setup.bash
+catkin_make
 #Add env to bash
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
